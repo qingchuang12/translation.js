@@ -1,13 +1,6 @@
 /**
  * 返回 Promise 数组中第一个成功 resolve 的值；
  * 如果所有 Promise 都 reject 了，则返回一个包含每次 reject 理由的数组。
- * @param promises - Promise 数组
- * @return
- */
-
-/**
- *
- * @param promises
  */
 export default function<T>(
   promises: Promise<T>[]
