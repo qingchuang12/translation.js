@@ -38,8 +38,8 @@ import { youdao, baidu, google } from 'translation.js'
 
 在 Chrome 扩展 / 应用中使用 &lt;script&gt; 标签引用时，你需要先下载下面的文件到你的项目里：
 
-* [md5.min.js](https://unpkg.com/blueimp-md5/js/md5.min.js)
-* [tjs.browser.js](https://unpkg.com/translation.js/dist/tjs.browser.js)
+- [md5.min.js](https://unpkg.com/blueimp-md5/js/md5.min.js)
+- [tjs.browser.js](https://unpkg.com/translation.js/dist/tjs.browser.js)
 
 然后在 HTML 中引用：
 
@@ -49,7 +49,9 @@ import { youdao, baidu, google } from 'translation.js'
 <!-- 然后引用 tjs.browser.js -->
 <script src="path/to/tjs.browser.js"></script>
 <!-- 然后你就可以从全局变量 tjs 中获取翻译对象了 -->
-<script>const { youdao, baidu, google } = window.tjs</script>
+<script>
+  const { youdao, baidu, google } = window.tjs
+</script>
 ```
 
 ## 使用
@@ -158,19 +160,42 @@ google.translate({
 
 ### 使用谷歌国际翻译接口
 
-默认情况下，translation.js 从 translate.google.**_cn_** 获取翻译结果、语种检测及语音地址，但**如果你的运行环境支持**，你也可以从 translate.google.**_com_** 获取数据：
+谷歌翻译有两个网页翻译接口，分别是国内可直接访问的 translate.google.**_cn_** 和国外才能访问的 translate.google.**_com_**。默认情况下，translation.js 会尝试同时从这两个地址获取数据，并将最先返回的数据提供给你，但你也可以使用 `com` 参数指定获取数据的地址。
+
+`com` 参数仅对谷歌翻译接口有效，它可以设为三个值：
+
+- `undefined`：默认值，将尝试同时从 .cn 和 .com 获取数据
+- `true`：只从 .com 获取数据
+- `false`：只从 .cn 获取数据
+
+特别的，`.audio()` 方法只在 `com` 参数为 `true` 时才会提供 .com 的语音地址，其他两种情况都会返回 .cn 的语音地址；`.translate()` 方法会在翻译结果中用 `com` 属性表示翻译结果是来自哪个地址。
+
+举例如下：
 
 ```js
-google.translate({
-  text: 'test',
-  com: true // 这一设置仅对谷歌翻译生效
-})
+// 没有指定 com 参数，将同时从 .cn 和 .com 的地址获取数据
+google
+  .translate({
+    text: 'test'
+  })
+  .then(result => {
+    // true 表示结果来自 .com，否则表示结果来自 .cn
+    console.log(result.com)
+  })
 
-google.detect({
+// 只会从 .com 获取数据
+google.translate({
   text: 'test',
   com: true
 })
 
+// 只会从 .cn 获取数据
+google.detect({
+  text: 'test',
+  com: false
+})
+
+// 返回 .com 的语音地址
 google.audio({
   text: 'test',
   com: true

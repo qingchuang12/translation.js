@@ -3,13 +3,12 @@ import {
   TranslateOptions,
   TranslateResult
 } from '../types'
-import request from '../../utils/make-request'
-import { getRoot } from './state'
+import { getRoot, requestGoogleAPI } from './state'
 import detect from './detect'
 import sign from './sign'
 
 export default async function(options: StringOrTranslateOptions) {
-  let { text, com = false, from = '', to = '' } =
+  let { text, com = undefined, from = '', to = '' } =
     typeof options === 'string' ? { text: options } : options
 
   if (!from) {
@@ -19,8 +18,8 @@ export default async function(options: StringOrTranslateOptions) {
     to = from.startsWith('zh') ? 'en' : 'zh-CN'
   }
 
-  return transformRaw(
-    await request(getRoot(com) + '/translate_a/single', {
+  const res = await requestGoogleAPI(
+    {
       query: {
         client: 'webapp',
         sl: from,
@@ -34,14 +33,17 @@ export default async function(options: StringOrTranslateOptions) {
         tk: await sign(text, com),
         q: text
       }
-    }),
-    {
-      from,
-      to,
-      com,
-      text
-    }
+    },
+    '/translate_a/single',
+    com
   )
+
+  return transformRaw(res.data, {
+    from,
+    to,
+    com: res.com,
+    text
+  })
 }
 
 function transformRaw(body: any[], queryObj: TranslateOptions) {
@@ -57,7 +59,8 @@ function transformRaw(body: any[], queryObj: TranslateOptions) {
       com
     )}/#view=home&op=translate&sl=${googleFrom}&tl=${to}&text=${encodeURIComponent(
       text
-    )}`
+    )}`,
+    com
   }
 
   try {

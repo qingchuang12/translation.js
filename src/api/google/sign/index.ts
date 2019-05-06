@@ -3,27 +3,30 @@
  * 做了一些修改以适应本项目
  */
 
-import request from '../../../utils/make-request'
-import { getRoot } from '../state'
+import { requestGoogleAPI } from '../state'
 import { sM, window } from './encryption'
 
-async function updateTKK(com: boolean) {
+async function updateTKK(com?: boolean) {
   const now = Math.floor(Date.now() / 3600000)
 
   if (Number(window.TKK.split('.')[0]) === now) {
     return
   }
 
-  const html = await request(getRoot(com), {
-    responseType: 'text'
-  })
+  const html: string = (await requestGoogleAPI(
+    {
+      responseType: 'text'
+    },
+    '',
+    com
+  )).data
   const code = html.match(/tkk:'(\d+\.\d+)'/)
   if (code) {
     window.TKK = code[1]
   }
 }
 
-export default async function(text: string, com: boolean) {
+export default async function(text: string, com?: boolean) {
   await updateTKK(com)
   return sM(text)
 }
