@@ -14,9 +14,8 @@ export default async function(options: StringOrTranslateOptions) {
     0,
     73
   )
-  const body: DetectResult = await request({
+  const body: DetectResult = await request(root + '/langdetect', {
     method: 'post',
-    url: root + '/langdetect',
     body: {
       query
     },

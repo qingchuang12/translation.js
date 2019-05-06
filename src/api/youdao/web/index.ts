@@ -70,9 +70,8 @@ export default async function(options: StringOrTranslateOptions) {
   }
 
   return transformRaw(
-    await request({
+    await request(translateAPI, {
       method: 'post',
-      url: translateAPI,
       type: 'form',
       body: Object.assign(
         {

@@ -16,8 +16,7 @@ const headers = IS_NODE
 
 export default async function() {
   // 尚不清楚 gtk 和 token 多久变一次，暂时在每次请求时都解析一遍
-  const html = await request({
-    url: 'https://fanyi.baidu.com',
+  const html = await request('https://fanyi.baidu.com', {
     headers,
     responseType: 'text'
   })

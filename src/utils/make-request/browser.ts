@@ -16,9 +16,12 @@ function qs(obj?: ParsedUrlQueryInput) {
   return r.join('&')
 }
 
-export default function(options: RequestOptions): Promise<any> {
+export default function(
+  url: string,
+  options: RequestOptions = {}
+): Promise<any> {
   const xhr = new XMLHttpRequest()
-  const urlObj = new URL(options.url)
+  const urlObj = new URL(url)
 
   urlObj.search += (urlObj.search ? '&' : '?') + qs(options.query)
 

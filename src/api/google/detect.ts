@@ -9,8 +9,7 @@ export default async function(options: StringOrTranslateOptions) {
   const { text, com = false } =
     typeof options === 'string' ? { text: options } : options
 
-  const result = await request({
-    url: getRoot(com) + '/translate_a/single',
+  const result = await request(getRoot(com) + '/translate_a/single', {
     query: {
       client: 'webapp',
       sl: 'auto',

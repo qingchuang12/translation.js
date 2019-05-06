@@ -7,9 +7,12 @@ import { stringify } from 'querystring'
 
 import getError, { ERROR_CODE } from '../error'
 
-export default function(options: RequestOptions): Promise<any> {
+export default function(
+  url: string,
+  options: RequestOptions = {}
+): Promise<any> {
   const { method = 'get' } = options
-  const urlObj = parse(options.url, true)
+  const urlObj = parse(url, true)
   const qs = stringify(Object.assign(urlObj.query, options.query))
 
   const headers: StringObject = {

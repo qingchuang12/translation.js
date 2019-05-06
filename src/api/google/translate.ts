@@ -20,8 +20,7 @@ export default async function(options: StringOrTranslateOptions) {
   }
 
   return transformRaw(
-    await request({
-      url: getRoot(com) + '/translate_a/single',
+    await request(getRoot(com) + '/translate_a/single', {
       query: {
         client: 'webapp',
         sl: from,

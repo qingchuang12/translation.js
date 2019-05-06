@@ -2,7 +2,6 @@ import { ParsedUrlQueryInput, ParsedUrlQuery } from 'querystring'
 import { StringObject } from '../../types'
 
 export interface RequestOptions {
-  url: string
   query?: ParsedUrlQuery
   method?: 'get' | 'post'
   body?: ParsedUrlQueryInput

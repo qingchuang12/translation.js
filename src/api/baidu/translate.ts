@@ -26,7 +26,7 @@ export default async function(options: StringOrTranslateOptions) {
   }
 
   if (!to) {
-    to = from.startsWith('zh') ? 'en' : 'zh-CN'
+    to = from && from.startsWith('zh') ? 'en' : 'zh-CN'
   }
 
   const customFromLang = standard2custom[from]
@@ -38,8 +38,7 @@ export default async function(options: StringOrTranslateOptions) {
 
   return transformRaw(
     text,
-    await request({
-      url: root + '/v2transapi',
+    await request(root + '/v2transapi', {
       type: 'form',
       method: 'post',
       body: Object.assign(

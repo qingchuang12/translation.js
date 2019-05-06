@@ -14,8 +14,7 @@ async function updateTKK(com: boolean) {
     return
   }
 
-  const html = await request({
-    url: getRoot(com),
+  const html = await request(getRoot(com), {
     responseType: 'text'
   })
   const code = html.match(/tkk:'(\d+\.\d+)'/)
