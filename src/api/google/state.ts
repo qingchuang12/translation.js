@@ -1,5 +1,6 @@
 import { RequestOptions } from '../../utils/make-request/types'
 import request from '../../utils/make-request'
+import getError, { ERROR_CODE } from '../../utils/error'
 
 const cnURL = 'https://translate.google.cn'
 const comURL = 'https://translate.google.com'
@@ -36,7 +37,7 @@ export async function requestGoogleAPI(
     function onFail() {
       fail += 1
       if (fail === 2) {
-        reject(new Error())
+        reject(getError(ERROR_CODE.NETWORK_ERROR, '网络错误'))
       }
     }
 
