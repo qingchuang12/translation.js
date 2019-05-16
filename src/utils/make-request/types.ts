@@ -9,3 +9,7 @@ export interface RequestOptions {
   headers?: StringObject
   responseType?: 'document' | 'json' | 'text'
 }
+
+export interface CancelablePromise<T> extends Promise<T> {
+  abort(): void
+}

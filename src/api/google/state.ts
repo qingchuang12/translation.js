@@ -1,6 +1,5 @@
 import { RequestOptions } from '../../utils/make-request/types'
 import request from '../../utils/make-request'
-import oneOf from '../../utils/promise.oneof'
 
 const cnURL = 'https://translate.google.cn'
 const comURL = 'https://translate.google.com'
@@ -28,16 +27,33 @@ export async function requestGoogleAPI(
       data: await request(cnURL + path, options)
     }
   }
+  return new Promise((resolve, reject) => {
+    const pCN = request(cnURL + path, options)
+    const pCOM = request(comURL + path, options)
 
-  // TODO: 成功得到第一个响应之后，将另一个请求 abort 掉
-  const res = await oneOf([
-    request(cnURL + path, options),
-    request(comURL + path, options)
-    // 为了保证跟其他部分的抛错格式一致，这里只抛出请求 CN 出现的 error
-  ]).catch(errors => Promise.reject(errors[0]))
+    let fail = 0
 
-  return {
-    com: res.index === 1,
-    data: res.val
-  }
+    function onFail() {
+      fail += 1
+      if (fail === 2) {
+        reject(new Error())
+      }
+    }
+
+    pCN.then(res => {
+      pCOM.abort()
+      resolve({
+        com: false,
+        data: res
+      })
+    }, onFail)
+
+    pCOM.then(res => {
+      pCN.abort()
+      resolve({
+        com: true,
+        data: res
+      })
+    }, onFail)
+  })
 }

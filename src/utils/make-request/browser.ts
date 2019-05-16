@@ -1,4 +1,4 @@
-import { RequestOptions } from './types'
+import { RequestOptions, CancelablePromise } from './types'
 import { ParsedUrlQueryInput } from 'querystring'
 import getError, { ERROR_CODE } from '../error'
 
@@ -19,7 +19,7 @@ function qs(obj?: ParsedUrlQueryInput) {
 export default function(
   url: string,
   options: RequestOptions = {}
-): Promise<any> {
+): CancelablePromise<any> {
   const xhr = new XMLHttpRequest()
   const urlObj = new URL(url)
 
@@ -58,7 +58,7 @@ export default function(
 
   xhr.responseType = options.responseType || 'json'
 
-  return new Promise((resolve, reject) => {
+  const p = new Promise((resolve, reject) => {
     xhr.onload = () => {
       // 如果 responseType 设为 json 但服务器返回的数据无法解析成 json，
       // 则 response 是 null，其他无法解析的情况也是同理。
@@ -75,5 +75,11 @@ export default function(
     }
 
     xhr.send(body)
-  })
+  }) as CancelablePromise<any>
+
+  p.abort = () => {
+    xhr.abort()
+  }
+
+  return p
 }

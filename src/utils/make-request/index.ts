@@ -1,5 +1,5 @@
 import { StringObject } from '../../types'
-import { RequestOptions } from './types'
+import { RequestOptions, CancelablePromise } from './types'
 import { request as requestHTTP } from 'http'
 import { request as requestHTTPs } from 'https'
 import { parse } from 'url'
@@ -10,7 +10,7 @@ import getError, { ERROR_CODE } from '../error'
 export default function(
   url: string,
   options: RequestOptions = {}
-): Promise<any> {
+): CancelablePromise<any> {
   const { method = 'get' } = options
   const urlObj = parse(url, true)
   const qs = stringify(Object.assign(urlObj.query, options.query))
@@ -52,41 +52,48 @@ export default function(
 
   const responseType = options.responseType || 'json'
 
-  return new Promise((resolve, reject) => {
-    const req = (urlObj.protocol === 'https:' ? requestHTTPs : requestHTTP)(
-      httpOptions,
-      res => {
-        // 内置的翻译接口都以 200 作为响应码，所以不是 200 的一律视为错误
-        if (res.statusCode !== 200) {
-          reject(getError(ERROR_CODE.API_SERVER_ERROR))
-          return
-        }
+  const req = (urlObj.protocol === 'https:' ? requestHTTPs : requestHTTP)(
+    httpOptions
+  )
 
-        res.setEncoding('utf8')
-        let rawData = ''
-        res.on('data', (chunk: string) => {
-          rawData += chunk
-        })
-        res.on('end', () => {
-          // Node.js 端只支持 json，其余都作为 text 处理
-          if (responseType === 'json') {
-            try {
-              resolve(JSON.parse(rawData))
-            } catch (e) {
-              // 与浏览器端保持一致，在无法解析成 json 时报错
-              reject(getError(ERROR_CODE.API_SERVER_ERROR))
-            }
-          } else {
-            resolve(rawData)
-          }
-        })
+  const p = new Promise((resolve, reject) => {
+    req.once('response', res => {
+      // 内置的翻译接口都以 200 作为响应码，所以不是 200 的一律视为错误
+      if (res.statusCode !== 200) {
+        reject(getError(ERROR_CODE.API_SERVER_ERROR))
+        return
       }
-    )
+
+      res.setEncoding('utf8')
+      let rawData = ''
+      res.on('data', (chunk: string) => {
+        rawData += chunk
+      })
+      res.on('end', () => {
+        // Node.js 端只支持 json，其余都作为 text 处理
+        if (responseType === 'json') {
+          try {
+            resolve(JSON.parse(rawData))
+          } catch (e) {
+            // 与浏览器端保持一致，在无法解析成 json 时报错
+            reject(getError(ERROR_CODE.API_SERVER_ERROR))
+          }
+        } else {
+          resolve(rawData)
+        }
+      })
+    })
 
     req.on('error', e => {
       reject(getError(ERROR_CODE.NETWORK_ERROR, e.message))
     })
 
     req.end(body)
-  })
+  }) as CancelablePromise<any>
+
+  p.abort = () => {
+    req.abort()
+  }
+
+  return p
 }
